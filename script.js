@@ -4,7 +4,7 @@ import { resonators, rankedTeams, elements } from './data.js';
 let currentTeam = { 1: null, 2: null, 3: null };
 let activeSlot = null;
 
-// --- DOM ---
+// --- DOM Elements ---
 const modal = document.getElementById('char-modal');
 const modalGrid = document.getElementById('modal-grid');
 const searchInput = document.getElementById('search-input');
@@ -13,26 +13,25 @@ const suggestionsArea = document.getElementById('suggestions-area');
 const tierListContainer = document.getElementById('tier-list-container');
 const resonancePanel = document.getElementById('resonance-panel');
 const resonanceText = document.getElementById('resonance-text');
+const dashboard = document.getElementById('team-dashboard');
+
+const rotationModal = document.getElementById('rotation-modal');
+const rotationSteps = document.getElementById('rotation-steps');
 
 // --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
     renderTierList('all');
     searchInput.addEventListener('input', (e) => renderModalGrid(e.target.value));
 
-    window.openSelector = openSelector;
-    window.closeModal = closeModal;
-    window.selectChar = selectChar;
-    window.clearSlot = clearSlot;
-    window.filterTierList = filterTierList;
-    window.switchTab = switchTab;
-    window.applyTeam = applyTeam;
-    window.resetBuilder = resetBuilder;
+    // Expose functions globally
+    Object.assign(window, {
+        openSelector, closeModal, selectChar, clearSlot, filterTierList, 
+        switchTab, applyTeam, resetBuilder, openRotationModal, closeRotationModal
+    });
 });
 
 // --- Helpers ---
-function formatNumber(num) {
-    return new Intl.NumberFormat('en-US').format(num);
-}
+function formatNumber(num) { return new Intl.NumberFormat('en-US').format(num); }
 
 function getElementColor(element) {
     const map = {
@@ -46,7 +45,7 @@ function getElementColor(element) {
     return map[element] || 'text-slate-500';
 }
 
-// --- Modal ---
+// --- Core Builder Logic ---
 function openSelector(slotId) {
     activeSlot = slotId;
     modal.classList.remove('hidden');
@@ -93,8 +92,8 @@ function selectChar(id) {
     if(char) {
         currentTeam[activeSlot] = char;
         updateSlotUI(activeSlot, char);
-        checkResonance();
-        updateSuggestions();
+        showBuildGuide(activeSlot, char); // NEW: Show build card
+        refreshDashboard();
         closeModal();
     }
 }
@@ -102,11 +101,16 @@ function selectChar(id) {
 function clearSlot(slotId, e) {
     if(e) e.stopPropagation();
     currentTeam[slotId] = null;
+    
+    // UI Reset
     document.getElementById(`slot-${slotId}-empty`).classList.remove('hidden');
     document.getElementById(`slot-${slotId}-filled`).classList.add('hidden');
     document.getElementById(`slot-${slotId}-filled`).classList.remove('flex');
-    checkResonance();
-    updateSuggestions();
+    
+    // Hide Build Guide
+    document.getElementById(`build-${slotId}`).classList.add('hidden');
+    
+    refreshDashboard();
 }
 
 function updateSlotUI(slot, char) {
@@ -120,8 +124,63 @@ function updateSlotUI(slot, char) {
     document.getElementById(`slot-${slot}-name`).innerText = char.name;
 }
 
-function resetBuilder() {
-    [1,2,3].forEach(id => clearSlot(id));
+// --- NEW FEATURE: Build Guide Display ---
+function showBuildGuide(slot, char) {
+    const card = document.getElementById(`build-${slot}`);
+    card.classList.remove('hidden');
+    
+    if(char.build) {
+        document.getElementById(`build-${slot}-set`).innerText = char.build.set;
+        document.getElementById(`build-${slot}-echo`).innerText = char.build.echo;
+        document.getElementById(`build-${slot}-w5`).innerText = char.build.weapon_5;
+        document.getElementById(`build-${slot}-w4`).innerText = char.build.weapon_4;
+    }
+}
+
+// --- NEW FEATURE: Dashboard & Cost Meter ---
+function refreshDashboard() {
+    checkResonance();
+    updateCostMeter();
+    updateSuggestions();
+    
+    const hasAnyChar = Object.values(currentTeam).some(c => c !== null);
+    if(hasAnyChar) dashboard.classList.remove('hidden');
+    else dashboard.classList.add('hidden');
+}
+
+function updateCostMeter() {
+    const chars = Object.values(currentTeam).filter(c => c);
+    if(chars.length === 0) return;
+
+    let score = 0;
+    // Calculation: Limited 5* (assumed not standard) = 20 pts, 4* = 5 pts
+    // Simplified logic since we don't have "Limited" flag in data explicitly, using rarity
+    chars.forEach(c => {
+        if(c.rarity === 5) score += 20;
+        else score += 5;
+    });
+
+    const maxScore = 60; // 3x 5 Stars
+    const percentage = Math.min((score / maxScore) * 100, 100);
+    
+    const bar = document.getElementById('cost-bar');
+    const badge = document.getElementById('cost-badge');
+    
+    bar.style.width = `${percentage}%`;
+    
+    if(score <= 20) {
+        bar.className = "h-2.5 rounded-full transition-all duration-500 bg-green-500";
+        badge.innerText = "F2P Friendly";
+        badge.className = "text-xs font-bold px-2 py-0.5 rounded bg-green-100 text-green-700";
+    } else if (score <= 40) {
+        bar.className = "h-2.5 rounded-full transition-all duration-500 bg-yellow-500";
+        badge.innerText = "Moderate Investment";
+        badge.className = "text-xs font-bold px-2 py-0.5 rounded bg-yellow-100 text-yellow-700";
+    } else {
+        bar.className = "h-2.5 rounded-full transition-all duration-500 bg-rose-600";
+        badge.innerText = "Whale / P2W";
+        badge.className = "text-xs font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-700";
+    }
 }
 
 function checkResonance() {
@@ -132,9 +191,7 @@ function checkResonance() {
     }
 
     const counts = {};
-    activeChars.forEach(c => {
-        counts[c.element] = (counts[c.element] || 0) + 1;
-    });
+    activeChars.forEach(c => counts[c.element] = (counts[c.element] || 0) + 1);
 
     let activeResonance = null;
     for(const [el, count] of Object.entries(counts)) {
@@ -143,7 +200,7 @@ function checkResonance() {
 
     if(activeResonance) {
         resonancePanel.classList.remove('hidden');
-        resonancePanel.className = `rounded-xl p-4 text-white shadow-lg flex items-center gap-4 animate-slide-up bg-gradient-to-r`;
+        resonancePanel.className = `rounded-xl p-4 text-white shadow-lg flex items-center gap-4 bg-gradient-to-r`;
         
         if(activeResonance === elements.HAVOC) resonancePanel.classList.add('from-rose-900', 'to-slate-900');
         else if(activeResonance === elements.SPECTRO) resonancePanel.classList.add('from-yellow-600', 'to-yellow-800');
@@ -152,7 +209,7 @@ function checkResonance() {
         else if(activeResonance === elements.AERO) resonancePanel.classList.add('from-teal-600', 'to-teal-800');
         else if(activeResonance === elements.FUSION) resonancePanel.classList.add('from-orange-600', 'to-orange-800');
 
-        resonanceText.innerText = `${activeResonance} Resonance Active (+ DMG)`;
+        resonanceText.innerText = `${activeResonance} Resonance`;
     } else {
         resonancePanel.classList.add('hidden');
     }
@@ -176,7 +233,7 @@ function updateSuggestions() {
     });
 
     if (relevantTeams.length === 0) {
-        suggestionsGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-4">No specific meta teams found. Try mixing standard supports.</div>`;
+        suggestionsGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-4">No pre-defined meta teams found. You're experimenting!</div>`;
         return;
     }
 
@@ -200,7 +257,10 @@ function updateSuggestions() {
                     </div>
                     <div class="flex gap-2 mt-2">${memberHtml}</div>
                 </div>
-                <button onclick="applyTeam('${team.id}')" class="text-xs bg-wuwa-50 text-wuwa-600 font-bold px-3 py-1.5 rounded-lg hover:bg-wuwa-100 transition">Apply</button>
+                <div class="flex flex-col gap-2">
+                    <button onclick="applyTeam('${team.id}')" class="text-xs bg-wuwa-50 text-wuwa-600 font-bold px-3 py-1.5 rounded-lg hover:bg-wuwa-100 transition">Apply</button>
+                    ${team.rotation ? `<button onclick="openRotationModal('${team.id}')" class="text-xs border border-slate-200 text-slate-600 font-bold px-3 py-1.5 rounded-lg hover:bg-slate-50 transition flex items-center gap-1"><i data-lucide="book-open" class="w-3 h-3"></i> Guide</button>` : ''}
+                </div>
             </div>
             
             <div class="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100">
@@ -227,17 +287,49 @@ function applyTeam(teamId) {
     const team = rankedTeams.find(t => t.id === teamId);
     if(!team) return;
     
-    currentTeam = { 1: null, 2: null, 3: null };
-    const m1 = resonators.find(r => r.id === team.members[0]);
-    const m2 = resonators.find(r => r.id === team.members[1]);
-    const m3 = resonators.find(r => r.id === team.members[2]);
+    resetBuilder();
+    
+    // Slight delay to allow reset visual to happen
+    setTimeout(() => {
+        const m1 = resonators.find(r => r.id === team.members[0]);
+        const m2 = resonators.find(r => r.id === team.members[1]);
+        const m3 = resonators.find(r => r.id === team.members[2]);
 
-    if(m1) { currentTeam[1] = m1; updateSlotUI(1, m1); }
-    if(m2) { currentTeam[2] = m2; updateSlotUI(2, m2); }
-    if(m3) { currentTeam[3] = m3; updateSlotUI(3, m3); }
+        if(m1) selectChar(m1.id); // Re-using selectChar to trigger build guides
+        if(m2) { activeSlot = 2; selectChar(m2.id); }
+        if(m3) { activeSlot = 3; selectChar(m3.id); }
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 50);
+}
 
-    checkResonance();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+function resetBuilder() {
+    [1,2,3].forEach(id => clearSlot(id));
+}
+
+// --- NEW FEATURE: Rotation Modal ---
+function openRotationModal(teamId) {
+    const team = rankedTeams.find(t => t.id === teamId);
+    if(!team || !team.rotation) return;
+
+    rotationSteps.innerHTML = '';
+    team.rotation.forEach((step, index) => {
+        const li = document.createElement('li');
+        li.className = "pl-6 relative";
+        li.innerHTML = `
+            <span class="absolute -left-2 top-0.5 w-4 h-4 rounded-full bg-slate-900 text-white text-[10px] flex items-center justify-center font-bold">${index + 1}</span>
+            <p class="text-slate-800 font-medium">${step}</p>
+        `;
+        rotationSteps.appendChild(li);
+    });
+
+    rotationModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeRotationModal() {
+    rotationModal.classList.add('hidden');
+    document.body.style.overflow = '';
 }
 
 // --- Tier List Logic ---
@@ -277,8 +369,11 @@ function renderTierList(type) {
                 ${memberObjs.map(m => `<img src="${m.img}" class="w-14 h-14 rounded-full border-2 border-white shadow-sm">`).join('')}
             </div>
             <div class="flex-grow text-center md:text-left">
-                <h3 class="font-bold text-slate-900">${team.name}</h3>
-                <p class="text-sm text-slate-500 leading-snug">${team.desc}</p>
+                <div class="flex items-center gap-2 justify-center md:justify-start">
+                    <h3 class="font-bold text-slate-900">${team.name}</h3>
+                    ${team.rotation ? `<button onclick="openRotationModal('${team.id}')" class="text-xs text-wuwa-600 bg-wuwa-50 px-2 py-0.5 rounded hover:bg-wuwa-100"><i data-lucide="book-open" class="inline w-3 h-3"></i> Guide</button>` : ''}
+                </div>
+                <p class="text-sm text-slate-500 leading-snug mt-1">${team.desc}</p>
             </div>
              <div class="grid grid-cols-3 gap-4 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 min-w-[200px]">
                 <div>
@@ -310,7 +405,6 @@ function switchTab(tab) {
         tierlistView.classList.add('hidden');
         bBtn.classList.replace('text-slate-900', 'text-slate-900');
         bBtn.classList.replace('bg-white', 'bg-white');
-        
         tBtn.classList.replace('text-slate-900', 'text-slate-500');
         tBtn.classList.replace('bg-white', 'hover:bg-slate-200/50');
     } else {
