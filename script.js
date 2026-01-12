@@ -43,10 +43,34 @@ function getElementColor(element) {
     return map[element] || 'text-slate-500';
 }
 
+function getElementGradient(element) {
+    const map = {
+        [elements.GLACIO]: 'from-sky-600 to-sky-800',
+        [elements.FUSION]: 'from-orange-600 to-orange-800',
+        [elements.ELECTRO]: 'from-purple-700 to-purple-900',
+        [elements.AERO]: 'from-teal-600 to-teal-800',
+        [elements.SPECTRO]: 'from-yellow-600 to-yellow-800',
+        [elements.HAVOC]: 'from-rose-900 to-slate-900'
+    };
+    return map[element] || 'from-slate-600 to-slate-800';
+}
+
+function getTierColor(tier) {
+    const map = {
+        'T0': 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white',
+        'T0.5': 'bg-gradient-to-r from-purple-500 to-pink-500 text-white',
+        'T1': 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white',
+        'T1.5': 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white',
+        'T2': 'bg-gradient-to-r from-slate-400 to-slate-500 text-white'
+    };
+    return map[tier] || 'bg-slate-200 text-slate-800';
+}
+
 function openSelector(slotId) {
     activeSlot = slotId;
     modal.classList.remove('hidden');
     renderModalGrid();
+    searchInput.value = '';
     document.body.style.overflow = 'hidden';
 }
 
@@ -65,6 +89,12 @@ function renderModalGrid(filter = '') {
         return nameMatch && notSelected;
     });
 
+    // Sort: 5-star first, then alphabetically
+    matches.sort((a, b) => {
+        if (a.rarity !== b.rarity) return b.rarity - a.rarity;
+        return a.name.localeCompare(b.name);
+    });
+
     matches.forEach(res => {
         const div = document.createElement('div');
         div.className = "cursor-pointer group bg-white border border-slate-200 rounded-xl p-3 hover:shadow-lg hover:border-wuwa-500 transition-all flex flex-col items-center";
@@ -73,6 +103,7 @@ function renderModalGrid(filter = '') {
         div.innerHTML = `
             <div class="relative w-14 h-14 mb-2">
                 <img src="${res.img}" class="w-full h-full rounded-full object-cover border-2 ${res.rarity === 5 ? 'border-yellow-400' : 'border-purple-400'}">
+                <div class="absolute -top-1 -right-1 w-5 h-5 rounded-full ${res.rarity === 5 ? 'bg-yellow-400' : 'bg-purple-400'} text-white text-[10px] font-bold flex items-center justify-center shadow">${res.rarity}</div>
             </div>
             <div class="text-center">
                 <p class="text-xs font-bold text-slate-800 leading-tight">${res.name}</p>
@@ -81,6 +112,10 @@ function renderModalGrid(filter = '') {
         `;
         modalGrid.appendChild(div);
     });
+
+    if (matches.length === 0) {
+        modalGrid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400">No characters found</div>`;
+    }
 }
 
 function selectChar(id) {
@@ -147,12 +182,18 @@ function refreshDashboard() {
     if(activeChars.length < 3) tacticalPanel.classList.add('hidden');
 }
 
-// --- FIXED APPLY TEAM LOGIC ---
 function applyTeam(teamId) {
     const team = rankedTeams.find(t => t.id === teamId);
     if(!team) return;
 
-    // Reset Data directly
+    // Reset all slots first
+    [1, 2, 3].forEach(slotId => {
+        if (currentTeam[slotId]) {
+            clearSlot(slotId);
+        }
+    });
+
+    // Apply new team
     const m1 = resonators.find(r => r.id === team.members[0]);
     const m2 = resonators.find(r => r.id === team.members[1]);
     const m3 = resonators.find(r => r.id === team.members[2]);
@@ -234,15 +275,8 @@ function checkResonance() {
     }
     if(activeResonance) {
         resonancePanel.classList.remove('hidden');
-        resonancePanel.className = `rounded-xl p-4 text-white shadow-lg flex items-center gap-4 bg-gradient-to-r transition-colors duration-500`;
-        
-        if(activeResonance === elements.HAVOC) resonancePanel.classList.add('from-rose-900', 'to-slate-900');
-        else if(activeResonance === elements.SPECTRO) resonancePanel.classList.add('from-yellow-600', 'to-yellow-800');
-        else if(activeResonance === elements.GLACIO) resonancePanel.classList.add('from-sky-600', 'to-sky-800');
-        else if(activeResonance === elements.ELECTRO) resonancePanel.classList.add('from-purple-700', 'to-purple-900');
-        else if(activeResonance === elements.AERO) resonancePanel.classList.add('from-teal-600', 'to-teal-800');
-        else if(activeResonance === elements.FUSION) resonancePanel.classList.add('from-orange-600', 'to-orange-800');
-
+        const gradient = getElementGradient(activeResonance);
+        resonancePanel.className = `rounded-xl p-4 text-white shadow-lg flex items-center gap-4 bg-gradient-to-r transition-colors duration-500 ${gradient}`;
         resonanceText.innerText = `${activeResonance} Resonance`;
     } else {
         resonancePanel.classList.add('hidden');
@@ -264,8 +298,12 @@ function updateSuggestions() {
         return activeChars.every(char => teamIds.includes(char.id));
     });
 
+    // Sort by tier quality
+    const tierOrder = { 'T0': 0, 'T0.5': 1, 'T1': 2, 'T1.5': 3, 'T2': 4 };
+    relevantTeams.sort((a, b) => tierOrder[a.tier] - tierOrder[b.tier]);
+
     if (relevantTeams.length === 0) {
-        suggestionsGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-4">No pre-defined meta teams found.</div>`;
+        suggestionsGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-4">No pre-defined meta teams found with your current selections.</div>`;
         return;
     }
 
@@ -284,7 +322,7 @@ function updateSuggestions() {
             <div class="flex justify-between items-start">
                 <div>
                     <div class="flex items-center gap-2 mb-1">
-                        <span class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600">${team.tier}</span>
+                        <span class="text-xs font-bold px-2 py-1 rounded ${getTierColor(team.tier)}">${team.tier}</span>
                         <h4 class="font-bold text-slate-900">${team.name}</h4>
                     </div>
                     <div class="flex gap-2 mt-2">${memberHtml}</div>
@@ -315,8 +353,13 @@ function updateSuggestions() {
 }
 
 function resetBuilder() {
-    [1,2,3].forEach(id => clearSlot(id));
+    [1, 2, 3].forEach(id => {
+        if (currentTeam[id]) {
+            clearSlot(id);
+        }
+    });
     tacticalPanel.classList.add('hidden');
+    suggestionsArea.classList.add('hidden');
 }
 
 function openRotationModal(teamId) {
@@ -325,7 +368,7 @@ function openRotationModal(teamId) {
     rotationSteps.innerHTML = '';
     team.rotation.forEach((step, index) => {
         const li = document.createElement('li');
-        li.className = "pl-6 relative";
+        li.className = "pl-6 relative pb-4";
         li.innerHTML = `
             <span class="absolute -left-2 top-0.5 w-4 h-4 rounded-full bg-slate-900 text-white text-[10px] flex items-center justify-center font-bold">${index + 1}</span>
             <p class="text-slate-800 font-medium">${step}</p>
@@ -334,6 +377,7 @@ function openRotationModal(teamId) {
     });
     rotationModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    lucide.createIcons();
 }
 
 function closeRotationModal() {
@@ -369,11 +413,16 @@ function refreshTierList() {
         return true;
     });
 
+    // Enhanced sorting
     list.sort((a, b) => {
         switch(currentTierState.sort) {
-            case 'dps': return b.stats.dps - a.stats.dps;
-            case 'ease': return b.ease_score - a.ease_score; // Now using ease_score from data
-            default: return 0;
+            case 'dps': 
+                return b.stats.dps - a.stats.dps;
+            case 'ease': 
+                return (b.radar?.ease || 50) - (a.radar?.ease || 50);
+            default: 
+                const tierOrder = { 'T0': 0, 'T0.5': 1, 'T1': 2, 'T1.5': 3, 'T2': 4 };
+                return tierOrder[a.tier] - tierOrder[b.tier];
         }
     });
 
@@ -388,36 +437,36 @@ function refreshTierList() {
         div.className = "bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6 items-center hover:border-wuwa-500 transition-all";
         
         div.innerHTML = `
-            <div class="flex-shrink-0 text-center md:text-left min-w-[80px]">
-                <span class="text-2xl font-black text-slate-900">${team.tier}</span>
-                <div class="text-xs font-bold text-slate-400 uppercase">${team.type}</div>
+            <div class="flex-shrink-0 text-center md:text-left min-w-[100px]">
+                <span class="inline-block px-3 py-1 rounded-lg text-sm font-black ${getTierColor(team.tier)}">${team.tier}</span>
+                <div class="text-xs font-bold text-slate-400 uppercase mt-1">${team.type}</div>
             </div>
             <div class="flex -space-x-3">
-                ${memberObjs.map(m => `<img src="${m.img}" class="w-14 h-14 rounded-full border-2 border-white shadow-sm">`).join('')}
+                ${memberObjs.map(m => `<img src="${m.img}" class="w-14 h-14 rounded-full border-2 border-white shadow-sm" title="${m.name}">`).join('')}
             </div>
             <div class="flex-grow text-center md:text-left">
-                <div class="flex items-center gap-2 justify-center md:justify-start">
+                <div class="flex items-center gap-2 justify-center md:justify-start mb-1">
                     <h3 class="font-bold text-slate-900">${team.name}</h3>
                     ${team.rotation ? `<button onclick="openRotationModal('${team.id}')" class="text-xs text-wuwa-600 bg-wuwa-50 px-2 py-0.5 rounded hover:bg-wuwa-100"><i data-lucide="book-open" class="inline w-3 h-3"></i> Guide</button>` : ''}
                 </div>
-                <p class="text-sm text-slate-500 leading-snug mt-1">${team.desc}</p>
+                <p class="text-sm text-slate-500 leading-snug">${team.desc}</p>
             </div>
              <div class="grid grid-cols-4 gap-4 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 min-w-[280px]">
                 <div>
                     <div class="text-[10px] text-slate-400 uppercase font-bold">DPS</div>
-                    <div class="font-mono font-bold text-slate-800">${formatNumber(team.stats.dps)}</div>
+                    <div class="font-mono font-bold text-slate-800 text-sm">${formatNumber(team.stats.dps)}</div>
                 </div>
                 <div>
                     <div class="text-[10px] text-slate-400 uppercase font-bold">Total</div>
-                    <div class="font-mono font-bold text-slate-800">${formatNumber(team.stats.total_dmg)}</div>
+                    <div class="font-mono font-bold text-slate-800 text-sm">${formatNumber(team.stats.total_dmg)}</div>
                 </div>
                  <div>
                     <div class="text-[10px] text-slate-400 uppercase font-bold">Time</div>
-                    <div class="font-mono font-bold text-slate-800">${team.stats.rot_time}s</div>
+                    <div class="font-mono font-bold text-slate-800 text-sm">${team.stats.rot_time}s</div>
                 </div>
                 <div>
                     <div class="text-[10px] text-slate-400 uppercase font-bold">Ease</div>
-                    <div class="font-mono font-bold text-slate-800">${team.radar ? team.radar.ease : 50}/100</div>
+                    <div class="font-mono font-bold text-slate-800 text-sm">${team.radar ? team.radar.ease : 50}/100</div>
                 </div>
             </div>
         `;
@@ -435,16 +484,16 @@ function switchTab(tab) {
     if(tab === 'builder') {
         builderView.classList.remove('hidden');
         tierlistView.classList.add('hidden');
-        bBtn.classList.replace('text-slate-900', 'text-slate-900');
-        bBtn.classList.replace('bg-white', 'bg-white');
-        tBtn.classList.replace('text-slate-900', 'text-slate-500');
-        tBtn.classList.replace('bg-white', 'hover:bg-slate-200/50');
+        bBtn.classList.add('bg-white', 'shadow-sm', 'text-slate-900');
+        bBtn.classList.remove('text-slate-500', 'hover:bg-slate-200/50');
+        tBtn.classList.remove('bg-white', 'shadow-sm', 'text-slate-900');
+        tBtn.classList.add('text-slate-500', 'hover:bg-slate-200/50');
     } else {
         tierlistView.classList.remove('hidden');
         builderView.classList.add('hidden');
-        tBtn.classList.replace('text-slate-500', 'text-slate-900');
-        tBtn.classList.replace('hover:bg-slate-200/50', 'bg-white');
-        bBtn.classList.replace('text-slate-900', 'text-slate-500');
-        bBtn.classList.replace('bg-white', 'hover:bg-slate-200/50');
+        tBtn.classList.add('bg-white', 'shadow-sm', 'text-slate-900');
+        tBtn.classList.remove('text-slate-500', 'hover:bg-slate-200/50');
+        bBtn.classList.remove('bg-white', 'shadow-sm', 'text-slate-900');
+        bBtn.classList.add('text-slate-500', 'hover:bg-slate-200/50');
     }
 }

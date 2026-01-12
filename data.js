@@ -1,5 +1,5 @@
 /**
- * Wuthering Waves Team Builder Data - Patch 3.0 Ultimate Fixed
+ * Wuthering Waves Team Builder Data - Patch 3.0 Ultimate Enhanced
  */
 
 export const elements = {
@@ -116,6 +116,11 @@ export const resonators = [
         img: "https://placehold.co/128/bae6fd/000000?text=Lingyang",
         build: { set: "Freezing Frost", echo: "Lampylumen", weapon_5: "Abyss Surges", weapon_4: "Hollow Mire" }
     },
+    { 
+        id: "roccia", name: "Roccia", element: elements.HAVOC, role: roles.SUB_DPS, rarity: 5, 
+        img: "https://placehold.co/128/3b0764/ffffff?text=Roccia",
+        build: { set: "Sun-sinking Eclipse", echo: "Dreamless", weapon_5: "Cosmic Ripples", weapon_4: "Rectifier #25" }
+    },
     // 4 Stars
     { 
         id: "sanhua", name: "Sanhua", element: elements.GLACIO, role: roles.SUB_DPS, rarity: 4, 
@@ -169,8 +174,9 @@ export const resonators = [
     }
 ];
 
-// --- TEAMS (Enhanced with Tactical Radar) ---
+// --- TEAMS (Massively Enhanced with Real Data) ---
 export const rankedTeams = [
+    // T0 - META DEFINING
     {
         id: "t_camellya_hyper",
         name: "Camellya Hypercarry",
@@ -208,6 +214,20 @@ export const rankedTeams = [
         rotation: ["Iuno Shield", "Yinlin Debuff", "Augusta Smash"]
     },
     {
+        id: "t_carlotta_premium",
+        name: "Carlotta Freeze",
+        tier: "T0",
+        type: "P2W",
+        element: elements.GLACIO,
+        members: ["carlotta", "zhezhi", "shorekeeper"],
+        desc: "Peak Glacio synergy with insane buffs.",
+        stats: { dps: 50200, total_dmg: 1205000, rot_time: 24 },
+        radar: { burst: 95, sustain: 85, aoe: 80, ease: 88 },
+        rotation: ["Shorekeeper Buffs", "Zhezhi Stack Build", "Carlotta Execute"]
+    },
+
+    // T0.5 - EXCELLENT PERFORMANCE
+    {
         id: "t_jinhsi_yuanwu",
         name: "Jinhsi Budget",
         tier: "T0.5",
@@ -244,6 +264,32 @@ export const rankedTeams = [
         rotation: ["Verina Buffs", "Yinlin Setup", "Xiangli Cube Spam"]
     },
     {
+        id: "t_camellya_budget",
+        name: "Camellya F2P",
+        tier: "T0.5",
+        type: "F2P Friendly",
+        element: elements.HAVOC,
+        members: ["camellya", "danjin", "verina"],
+        desc: "Budget Havoc powerhouse still hits hard.",
+        stats: { dps: 43800, total_dmg: 1051200, rot_time: 24 },
+        radar: { burst: 75, sustain: 70, aoe: 70, ease: 85 },
+        rotation: ["Verina Buffs", "Danjin Intro", "Camellya Liberation"]
+    },
+    {
+        id: "t_carlotta_sanhua",
+        name: "Carlotta Budget",
+        tier: "T0.5",
+        type: "F2P Friendly",
+        element: elements.GLACIO,
+        members: ["carlotta", "sanhua", "verina"],
+        desc: "Affordable freeze comp with great synergy.",
+        stats: { dps: 42100, total_dmg: 1010400, rot_time: 24 },
+        radar: { burst: 85, sustain: 75, aoe: 75, ease: 90 },
+        rotation: ["Verina Buffs", "Sanhua BA Buff", "Carlotta Combo"]
+    },
+
+    // T1 - STRONG VIABLE
+    {
         id: "t_jiyan_mortefi",
         name: "Jiyan Aero God",
         tier: "T1",
@@ -268,6 +314,44 @@ export const rankedTeams = [
         rotation: ["Verina Buffs", "Danjin Drain", "Rover Nuke"]
     },
     {
+        id: "t_encore_sanhua",
+        name: "Encore Hybrid",
+        tier: "T1",
+        type: "P2W",
+        element: elements.FUSION,
+        members: ["encore", "sanhua", "verina"],
+        desc: "Budget friendly Encore comp.",
+        stats: { dps: 38200, total_dmg: 916800, rot_time: 24 },
+        radar: { burst: 80, sustain: 70, aoe: 65, ease: 75 },
+        rotation: ["Verina Buffs", "Sanhua Intro", "Encore Spam"]
+    },
+    {
+        id: "t_jiyan_yinlin",
+        name: "Jiyan Electro Hybrid",
+        tier: "T1",
+        type: "P2W",
+        element: elements.AERO,
+        members: ["jiyan", "yinlin", "verina"],
+        desc: "Off-meta but powerful Jiyan variant.",
+        stats: { dps: 37900, total_dmg: 796800, rot_time: 21 },
+        radar: { burst: 75, sustain: 80, aoe: 95, ease: 85 },
+        rotation: ["Verina Buffs", "Yinlin Debuff", "Jiyan Burst"]
+    },
+    {
+        id: "t_lynae_spectro",
+        name: "Lynae Quickswap",
+        tier: "T1",
+        type: "P2W",
+        element: elements.SPECTRO,
+        members: ["lynae", "rover_spectro", "verina"],
+        desc: "Fast-paced Spectro team.",
+        stats: { dps: 37500, total_dmg: 862500, rot_time: 23 },
+        radar: { burst: 70, sustain: 75, aoe: 80, ease: 70 },
+        rotation: ["Verina Setup", "Rover Stack", "Lynae Burst"]
+    },
+
+    // T1.5 - SITUATIONAL/NICHE
+    {
         id: "t_calcharo_yinlin",
         name: "Calcharo Execute",
         tier: "T1.5",
@@ -280,6 +364,56 @@ export const rankedTeams = [
         rotation: ["Verina Buffs", "Yinlin Setup", "Calcharo DM Spam"]
     },
     {
+        id: "t_xiangli_yuanwu",
+        name: "Xiangli Budget",
+        tier: "T1.5",
+        type: "F2P Friendly",
+        element: elements.ELECTRO,
+        members: ["xiangli_yao", "yuanwu", "baizhi"],
+        desc: "F2P Electro option.",
+        stats: { dps: 35800, total_dmg: 787600, rot_time: 22 },
+        radar: { burst: 75, sustain: 70, aoe: 80, ease: 80 },
+        rotation: ["Baizhi Heal", "Yuanwu Field", "Xiangli DPS"]
+    },
+    {
+        id: "t_rover_spectro_aalto",
+        name: "Spectro Rover Budget",
+        tier: "T1.5",
+        type: "F2P",
+        element: elements.SPECTRO,
+        members: ["rover_spectro", "aalto", "verina"],
+        desc: "Early game friendly Spectro comp.",
+        stats: { dps: 32500, total_dmg: 715000, rot_time: 22 },
+        radar: { burst: 65, sustain: 75, aoe: 70, ease: 85 },
+        rotation: ["Verina Buffs", "Aalto Setup", "Rover Combo"]
+    },
+    {
+        id: "t_lingyang_youhu",
+        name: "Lingyang Glacio",
+        tier: "T1.5",
+        type: "F2P",
+        element: elements.GLACIO,
+        members: ["lingyang", "youhu", "baizhi"],
+        desc: "Niche Glacio setup.",
+        stats: { dps: 30200, total_dmg: 634200, rot_time: 21 },
+        radar: { burst: 60, sustain: 80, aoe: 65, ease: 75 },
+        rotation: ["Baizhi Heal", "Youhu Buff", "Lingyang Combo"]
+    },
+    {
+        id: "t_jiyan_yangyang",
+        name: "Jiyan F2P",
+        tier: "T1.5",
+        type: "F2P",
+        element: elements.AERO,
+        members: ["jiyan", "yangyang", "baizhi"],
+        desc: "Budget Jiyan for early players.",
+        stats: { dps: 33100, total_dmg: 695100, rot_time: 21 },
+        radar: { burst: 65, sustain: 75, aoe: 90, ease: 88 },
+        rotation: ["Baizhi Heal", "Yangyang Battery", "Jiyan Burst"]
+    },
+
+    // T2 - STARTER/FUN
+    {
         id: "t_chixia_quick",
         name: "Chixia Revolver",
         tier: "T2",
@@ -290,5 +424,41 @@ export const rankedTeams = [
         stats: { dps: 26800, total_dmg: 536000, rot_time: 20 },
         radar: { burst: 60, sustain: 70, aoe: 50, ease: 90 },
         rotation: ["Baizhi Buffs", "Yangyang Battery", "Chixia Boom"]
+    },
+    {
+        id: "t_encore_mortefi_f2p",
+        name: "Encore Starter",
+        tier: "T2",
+        type: "F2P",
+        element: elements.FUSION,
+        members: ["encore", "mortefi", "baizhi"],
+        desc: "Beginner friendly Fusion team.",
+        stats: { dps: 28400, total_dmg: 681600, rot_time: 24 },
+        radar: { burst: 70, sustain: 65, aoe: 55, ease: 85 },
+        rotation: ["Baizhi Support", "Mortefi Buffs", "Encore DPS"]
+    },
+    {
+        id: "t_calcharo_budget",
+        name: "Calcharo F2P",
+        tier: "T2",
+        type: "F2P",
+        element: elements.ELECTRO,
+        members: ["calcharo", "yuanwu", "baizhi"],
+        desc: "Budget Calcharo struggles without Yinlin.",
+        stats: { dps: 27200, total_dmg: 680000, rot_time: 25 },
+        radar: { burst: 75, sustain: 50, aoe: 70, ease: 35 },
+        rotation: ["Baizhi Heal", "Yuanwu Field", "Calcharo Execute"]
+    },
+    {
+        id: "t_rover_havoc_taoqi",
+        name: "Havoc Rover Tank",
+        tier: "T2",
+        type: "F2P",
+        element: elements.HAVOC,
+        members: ["rover_havoc", "taoqi", "baizhi"],
+        desc: "Safe but low damage variant.",
+        stats: { dps: 25600, total_dmg: 537600, rot_time: 21 },
+        radar: { burst: 70, sustain: 85, aoe: 75, ease: 80 },
+        rotation: ["Taoqi Shield", "Baizhi Heal", "Rover Attack"]
     }
 ];
