@@ -25,9 +25,33 @@ document.addEventListener('DOMContentLoaded', () => {
     Object.assign(window, {
         openSelector, closeModal, selectChar, clearSlot, 
         updateTierFilters, switchTab, applyTeam, resetBuilder, 
-        openRotationModal, closeRotationModal
+        openRotationModal, closeRotationModal, showCharacterStats
     });
 });
+
+function showCharacterStats() {
+    // Count character appearances in teams
+    const charUsage = {};
+    resonators.forEach(char => charUsage[char.id] = 0);
+    
+    rankedTeams.forEach(team => {
+        team.members.forEach(memberId => {
+            if (charUsage[memberId] !== undefined) {
+                charUsage[memberId]++;
+            }
+        });
+    });
+    
+    // Get top 10 most used
+    const sorted = Object.entries(charUsage)
+        .map(([id, count]) => ({ char: resonators.find(r => r.id === id), count }))
+        .filter(item => item.char && item.count > 0)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+    
+    console.log('Top 10 Most Used Characters:', sorted);
+    return sorted;
+}
 
 function formatNumber(num) { return new Intl.NumberFormat('en-US').format(num); }
 
@@ -426,6 +450,9 @@ function refreshTierList() {
         }
     });
 
+    // Update statistics
+    updateTierStatistics();
+
     if(list.length === 0) {
         tierListContainer.innerHTML = `<div class="text-center py-10 text-slate-500">No teams found matching these filters.</div>`;
         return;
@@ -473,6 +500,29 @@ function refreshTierList() {
         tierListContainer.appendChild(div);
     });
     lucide.createIcons();
+}
+
+function updateTierStatistics() {
+    const tierCounts = { 'T0': 0, 'T0.5': 0, 'T1': 0, 'T1.5': 0, 'T2': 0 };
+    rankedTeams.forEach(team => {
+        if (tierCounts[team.tier] !== undefined) {
+            tierCounts[team.tier]++;
+        }
+    });
+    
+    const statElements = {
+        'T0': document.getElementById('stat-t0'),
+        'T0.5': document.getElementById('stat-t05'),
+        'T1': document.getElementById('stat-t1'),
+        'T1.5': document.getElementById('stat-t15'),
+        'T2': document.getElementById('stat-t2')
+    };
+    
+    Object.keys(statElements).forEach(tier => {
+        if (statElements[tier]) {
+            statElements[tier].textContent = tierCounts[tier];
+        }
+    });
 }
 
 function switchTab(tab) {
