@@ -1,17 +1,10 @@
 import { resonators, rankedTeams, elements } from './data.js';
 
-// --- Global State ---
 let currentTeam = { 1: null, 2: null, 3: null };
 let activeSlot = null;
+let currentTierState = { type: 'all', element: 'all', sort: 'tier' };
 
-// Tier List State
-let currentTierState = {
-    type: 'all',
-    element: 'all',
-    sort: 'tier'
-};
-
-// --- DOM Elements ---
+// DOM
 const modal = document.getElementById('char-modal');
 const modalGrid = document.getElementById('modal-grid');
 const searchInput = document.getElementById('search-input');
@@ -21,15 +14,14 @@ const tierListContainer = document.getElementById('tier-list-container');
 const resonancePanel = document.getElementById('resonance-panel');
 const resonanceText = document.getElementById('resonance-text');
 const dashboard = document.getElementById('team-dashboard');
+const tacticalPanel = document.getElementById('tactical-analysis');
 const rotationModal = document.getElementById('rotation-modal');
 const rotationSteps = document.getElementById('rotation-steps');
 
-// --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
-    refreshTierList(); // Use new refresh function
+    refreshTierList();
     searchInput.addEventListener('input', (e) => renderModalGrid(e.target.value));
 
-    // Expose functions globally
     Object.assign(window, {
         openSelector, closeModal, selectChar, clearSlot, 
         updateTierFilters, switchTab, applyTeam, resetBuilder, 
@@ -37,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// --- Helpers ---
 function formatNumber(num) { return new Intl.NumberFormat('en-US').format(num); }
 
 function getElementColor(element) {
@@ -52,7 +43,6 @@ function getElementColor(element) {
     return map[element] || 'text-slate-500';
 }
 
-// --- Builder Logic ---
 function openSelector(slotId) {
     activeSlot = slotId;
     modal.classList.remove('hidden');
@@ -69,7 +59,6 @@ function closeModal() {
 function renderModalGrid(filter = '') {
     modalGrid.innerHTML = '';
     const existingIds = Object.values(currentTeam).filter(r => r).map(r => r.id);
-
     const matches = resonators.filter(r => {
         const nameMatch = r.name.toLowerCase().includes(filter.toLowerCase());
         const notSelected = !existingIds.includes(r.id);
@@ -112,6 +101,10 @@ function clearSlot(slotId, e) {
     document.getElementById(`slot-${slotId}-filled`).classList.add('hidden');
     document.getElementById(`slot-${slotId}-filled`).classList.remove('flex');
     document.getElementById(`build-${slotId}`).classList.add('hidden');
+    
+    // Remove glow
+    document.getElementById(`slot-${slotId}`).classList.remove('slot-glow-havoc', 'slot-glow-spectro', 'slot-glow-glacio', 'slot-glow-fusion', 'slot-glow-aero', 'slot-glow-electro');
+    
     refreshDashboard();
 }
 
@@ -124,6 +117,10 @@ function updateSlotUI(slot, char) {
     document.getElementById(`slot-${slot}-img`).src = char.img;
     document.getElementById(`slot-${slot}-img`).className = `w-20 h-20 rounded-full border-4 shadow-sm mb-2 object-cover ${char.rarity === 5 ? 'border-yellow-400' : 'border-purple-400'}`;
     document.getElementById(`slot-${slot}-name`).innerText = char.name;
+
+    // Apply Glow
+    const slotDiv = document.getElementById(`slot-${slot}`);
+    slotDiv.className = `relative group cursor-pointer transition-all duration-300 rounded-2xl slot-glow-${char.element.toLowerCase()}`;
 }
 
 function showBuildGuide(slot, char) {
@@ -142,9 +139,59 @@ function refreshDashboard() {
     updateCostMeter();
     updateSuggestions();
     
-    const hasAnyChar = Object.values(currentTeam).some(c => c !== null);
-    if(hasAnyChar) dashboard.classList.remove('hidden');
+    const activeChars = Object.values(currentTeam).filter(c => c);
+    if(activeChars.length > 0) dashboard.classList.remove('hidden');
     else dashboard.classList.add('hidden');
+
+    // Hide tactical if team is incomplete
+    if(activeChars.length < 3) tacticalPanel.classList.add('hidden');
+}
+
+// --- FIXED APPLY TEAM LOGIC ---
+function applyTeam(teamId) {
+    const team = rankedTeams.find(t => t.id === teamId);
+    if(!team) return;
+
+    // Reset Data directly
+    const m1 = resonators.find(r => r.id === team.members[0]);
+    const m2 = resonators.find(r => r.id === team.members[1]);
+    const m3 = resonators.find(r => r.id === team.members[2]);
+
+    currentTeam[1] = m1;
+    currentTeam[2] = m2;
+    currentTeam[3] = m3;
+
+    // Force Update UI for all slots
+    if(m1) { updateSlotUI(1, m1); showBuildGuide(1, m1); }
+    if(m2) { updateSlotUI(2, m2); showBuildGuide(2, m2); }
+    if(m3) { updateSlotUI(3, m3); showBuildGuide(3, m3); }
+
+    refreshDashboard();
+    renderTacticalAnalysis(team);
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderTacticalAnalysis(team) {
+    if(!team.radar) return;
+    
+    tacticalPanel.classList.remove('hidden');
+    document.getElementById('analysis-team-name').innerText = team.name;
+
+    // Animate bars
+    setTimeout(() => {
+        document.getElementById('bar-burst').style.width = `${team.radar.burst}%`;
+        document.getElementById('val-burst').innerText = `${team.radar.burst}/100`;
+
+        document.getElementById('bar-sustain').style.width = `${team.radar.sustain}%`;
+        document.getElementById('val-sustain').innerText = `${team.radar.sustain}/100`;
+
+        document.getElementById('bar-aoe').style.width = `${team.radar.aoe}%`;
+        document.getElementById('val-aoe').innerText = `${team.radar.aoe}/100`;
+
+        document.getElementById('bar-ease').style.width = `${team.radar.ease}%`;
+        document.getElementById('val-ease').innerText = `${team.radar.ease}/100`;
+    }, 100);
 }
 
 function updateCostMeter() {
@@ -152,8 +199,7 @@ function updateCostMeter() {
     if(chars.length === 0) return;
     let score = 0;
     chars.forEach(c => score += (c.rarity === 5 ? 20 : 5));
-    const maxScore = 60;
-    const percentage = Math.min((score / maxScore) * 100, 100);
+    const percentage = Math.min((score / 60) * 100, 100);
     const bar = document.getElementById('cost-bar');
     const badge = document.getElementById('cost-badge');
     
@@ -188,7 +234,7 @@ function checkResonance() {
     }
     if(activeResonance) {
         resonancePanel.classList.remove('hidden');
-        resonancePanel.className = `rounded-xl p-4 text-white shadow-lg flex items-center gap-4 bg-gradient-to-r`;
+        resonancePanel.className = `rounded-xl p-4 text-white shadow-lg flex items-center gap-4 bg-gradient-to-r transition-colors duration-500`;
         
         if(activeResonance === elements.HAVOC) resonancePanel.classList.add('from-rose-900', 'to-slate-900');
         else if(activeResonance === elements.SPECTRO) resonancePanel.classList.add('from-yellow-600', 'to-yellow-800');
@@ -268,26 +314,11 @@ function updateSuggestions() {
     lucide.createIcons();
 }
 
-function applyTeam(teamId) {
-    const team = rankedTeams.find(t => t.id === teamId);
-    if(!team) return;
-    resetBuilder();
-    setTimeout(() => {
-        const m1 = resonators.find(r => r.id === team.members[0]);
-        const m2 = resonators.find(r => r.id === team.members[1]);
-        const m3 = resonators.find(r => r.id === team.members[2]);
-        if(m1) selectChar(m1.id);
-        if(m2) { activeSlot = 2; selectChar(m2.id); }
-        if(m3) { activeSlot = 3; selectChar(m3.id); }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 50);
-}
-
 function resetBuilder() {
     [1,2,3].forEach(id => clearSlot(id));
+    tacticalPanel.classList.add('hidden');
 }
 
-// --- Rotation Modal ---
 function openRotationModal(teamId) {
     const team = rankedTeams.find(t => t.id === teamId);
     if(!team || !team.rotation) return;
@@ -310,11 +341,8 @@ function closeRotationModal() {
     document.body.style.overflow = '';
 }
 
-// --- NEW TIER LIST LOGIC (Filter & Sort) ---
 function updateTierFilters(key, value) {
     currentTierState[key] = value;
-    
-    // Update Button Styles for Type
     if(key === 'type') {
         document.querySelectorAll('.type-btn').forEach(btn => {
             if(btn.dataset.type === value) {
@@ -326,40 +354,29 @@ function updateTierFilters(key, value) {
             }
         });
     }
-
     refreshTierList();
 }
 
 function refreshTierList() {
     tierListContainer.innerHTML = '';
-    
-    // 1. Filter
     let list = rankedTeams.filter(t => {
-        // Type Filter
         if(currentTierState.type !== 'all') {
             const isF2P = t.type.includes('F2P');
             if(currentTierState.type === 'F2P' && !isF2P) return false;
             if(currentTierState.type === 'P2W' && isF2P) return false;
         }
-        // Element Filter
-        if(currentTierState.element !== 'all') {
-            if(t.element !== currentTierState.element) return false;
-        }
+        if(currentTierState.element !== 'all' && t.element !== currentTierState.element) return false;
         return true;
     });
 
-    // 2. Sort
     list.sort((a, b) => {
         switch(currentTierState.sort) {
             case 'dps': return b.stats.dps - a.stats.dps;
-            case 'total': return b.stats.total_dmg - a.stats.total_dmg;
-            case 'time': return a.stats.rot_time - b.stats.rot_time; // Ascending (faster is better)
-            case 'ease': return b.ease_score - a.ease_score; // Higher score = easier
-            default: return 0; // Default tier order from array
+            case 'ease': return b.ease_score - a.ease_score; // Now using ease_score from data
+            default: return 0;
         }
     });
 
-    // 3. Render
     if(list.length === 0) {
         tierListContainer.innerHTML = `<div class="text-center py-10 text-slate-500">No teams found matching these filters.</div>`;
         return;
@@ -400,7 +417,7 @@ function refreshTierList() {
                 </div>
                 <div>
                     <div class="text-[10px] text-slate-400 uppercase font-bold">Ease</div>
-                    <div class="font-mono font-bold text-slate-800">${team.ease_score}/100</div>
+                    <div class="font-mono font-bold text-slate-800">${team.radar ? team.radar.ease : 50}/100</div>
                 </div>
             </div>
         `;
