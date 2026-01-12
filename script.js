@@ -1,8 +1,15 @@
 import { resonators, rankedTeams, elements } from './data.js';
 
-// --- State ---
+// --- Global State ---
 let currentTeam = { 1: null, 2: null, 3: null };
 let activeSlot = null;
+
+// Tier List State
+let currentTierState = {
+    type: 'all',
+    element: 'all',
+    sort: 'tier'
+};
 
 // --- DOM Elements ---
 const modal = document.getElementById('char-modal');
@@ -14,19 +21,19 @@ const tierListContainer = document.getElementById('tier-list-container');
 const resonancePanel = document.getElementById('resonance-panel');
 const resonanceText = document.getElementById('resonance-text');
 const dashboard = document.getElementById('team-dashboard');
-
 const rotationModal = document.getElementById('rotation-modal');
 const rotationSteps = document.getElementById('rotation-steps');
 
 // --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
-    renderTierList('all');
+    refreshTierList(); // Use new refresh function
     searchInput.addEventListener('input', (e) => renderModalGrid(e.target.value));
 
     // Expose functions globally
     Object.assign(window, {
-        openSelector, closeModal, selectChar, clearSlot, filterTierList, 
-        switchTab, applyTeam, resetBuilder, openRotationModal, closeRotationModal
+        openSelector, closeModal, selectChar, clearSlot, 
+        updateTierFilters, switchTab, applyTeam, resetBuilder, 
+        openRotationModal, closeRotationModal
     });
 });
 
@@ -45,7 +52,7 @@ function getElementColor(element) {
     return map[element] || 'text-slate-500';
 }
 
-// --- Core Builder Logic ---
+// --- Builder Logic ---
 function openSelector(slotId) {
     activeSlot = slotId;
     modal.classList.remove('hidden');
@@ -92,7 +99,7 @@ function selectChar(id) {
     if(char) {
         currentTeam[activeSlot] = char;
         updateSlotUI(activeSlot, char);
-        showBuildGuide(activeSlot, char); // NEW: Show build card
+        showBuildGuide(activeSlot, char);
         refreshDashboard();
         closeModal();
     }
@@ -101,15 +108,10 @@ function selectChar(id) {
 function clearSlot(slotId, e) {
     if(e) e.stopPropagation();
     currentTeam[slotId] = null;
-    
-    // UI Reset
     document.getElementById(`slot-${slotId}-empty`).classList.remove('hidden');
     document.getElementById(`slot-${slotId}-filled`).classList.add('hidden');
     document.getElementById(`slot-${slotId}-filled`).classList.remove('flex');
-    
-    // Hide Build Guide
     document.getElementById(`build-${slotId}`).classList.add('hidden');
-    
     refreshDashboard();
 }
 
@@ -124,11 +126,9 @@ function updateSlotUI(slot, char) {
     document.getElementById(`slot-${slot}-name`).innerText = char.name;
 }
 
-// --- NEW FEATURE: Build Guide Display ---
 function showBuildGuide(slot, char) {
     const card = document.getElementById(`build-${slot}`);
     card.classList.remove('hidden');
-    
     if(char.build) {
         document.getElementById(`build-${slot}-set`).innerText = char.build.set;
         document.getElementById(`build-${slot}-echo`).innerText = char.build.echo;
@@ -137,7 +137,6 @@ function showBuildGuide(slot, char) {
     }
 }
 
-// --- NEW FEATURE: Dashboard & Cost Meter ---
 function refreshDashboard() {
     checkResonance();
     updateCostMeter();
@@ -151,18 +150,10 @@ function refreshDashboard() {
 function updateCostMeter() {
     const chars = Object.values(currentTeam).filter(c => c);
     if(chars.length === 0) return;
-
     let score = 0;
-    // Calculation: Limited 5* (assumed not standard) = 20 pts, 4* = 5 pts
-    // Simplified logic since we don't have "Limited" flag in data explicitly, using rarity
-    chars.forEach(c => {
-        if(c.rarity === 5) score += 20;
-        else score += 5;
-    });
-
-    const maxScore = 60; // 3x 5 Stars
+    chars.forEach(c => score += (c.rarity === 5 ? 20 : 5));
+    const maxScore = 60;
     const percentage = Math.min((score / maxScore) * 100, 100);
-    
     const bar = document.getElementById('cost-bar');
     const badge = document.getElementById('cost-badge');
     
@@ -189,15 +180,12 @@ function checkResonance() {
         resonancePanel.classList.add('hidden');
         return;
     }
-
     const counts = {};
     activeChars.forEach(c => counts[c.element] = (counts[c.element] || 0) + 1);
-
     let activeResonance = null;
     for(const [el, count] of Object.entries(counts)) {
         if(count >= 2) activeResonance = el;
     }
-
     if(activeResonance) {
         resonancePanel.classList.remove('hidden');
         resonancePanel.className = `rounded-xl p-4 text-white shadow-lg flex items-center gap-4 bg-gradient-to-r`;
@@ -215,7 +203,6 @@ function checkResonance() {
     }
 }
 
-// --- Suggestions Logic ---
 function updateSuggestions() {
     const activeChars = Object.values(currentTeam).filter(c => c);
     suggestionsGrid.innerHTML = '';
@@ -224,7 +211,6 @@ function updateSuggestions() {
         suggestionsArea.classList.add('hidden');
         return;
     }
-
     suggestionsArea.classList.remove('hidden');
 
     const relevantTeams = rankedTeams.filter(team => {
@@ -233,7 +219,7 @@ function updateSuggestions() {
     });
 
     if (relevantTeams.length === 0) {
-        suggestionsGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-4">No pre-defined meta teams found. You're experimenting!</div>`;
+        suggestionsGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-4">No pre-defined meta teams found.</div>`;
         return;
     }
 
@@ -259,21 +245,20 @@ function updateSuggestions() {
                 </div>
                 <div class="flex flex-col gap-2">
                     <button onclick="applyTeam('${team.id}')" class="text-xs bg-wuwa-50 text-wuwa-600 font-bold px-3 py-1.5 rounded-lg hover:bg-wuwa-100 transition">Apply</button>
-                    ${team.rotation ? `<button onclick="openRotationModal('${team.id}')" class="text-xs border border-slate-200 text-slate-600 font-bold px-3 py-1.5 rounded-lg hover:bg-slate-50 transition flex items-center gap-1"><i data-lucide="book-open" class="w-3 h-3"></i> Guide</button>` : ''}
+                    ${team.rotation ? `<button onclick="openRotationModal('${team.id}')" class="text-xs border border-slate-200 text-slate-600 font-bold px-3 py-1.5 rounded-lg hover:bg-slate-50 transition flex items-center gap-1"><i data-lucide="book-open" class="inline w-3 h-3"></i> Guide</button>` : ''}
                 </div>
             </div>
-            
             <div class="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100">
                 <div class="text-center">
                     <p class="text-[10px] text-slate-400 uppercase font-bold">DPS</p>
                     <p class="text-sm font-mono font-bold text-slate-800">${formatNumber(team.stats.dps)}</p>
                 </div>
                 <div class="text-center border-l border-slate-100">
-                    <p class="text-[10px] text-slate-400 uppercase font-bold">Total Dmg</p>
+                    <p class="text-[10px] text-slate-400 uppercase font-bold">Total</p>
                     <p class="text-sm font-mono font-bold text-slate-800">${formatNumber(team.stats.total_dmg)}</p>
                 </div>
                 <div class="text-center border-l border-slate-100">
-                    <p class="text-[10px] text-slate-400 uppercase font-bold">Rot Time</p>
+                    <p class="text-[10px] text-slate-400 uppercase font-bold">Time</p>
                     <p class="text-sm font-mono font-bold text-slate-800">${team.stats.rot_time}s</p>
                 </div>
             </div>
@@ -286,19 +271,14 @@ function updateSuggestions() {
 function applyTeam(teamId) {
     const team = rankedTeams.find(t => t.id === teamId);
     if(!team) return;
-    
     resetBuilder();
-    
-    // Slight delay to allow reset visual to happen
     setTimeout(() => {
         const m1 = resonators.find(r => r.id === team.members[0]);
         const m2 = resonators.find(r => r.id === team.members[1]);
         const m3 = resonators.find(r => r.id === team.members[2]);
-
-        if(m1) selectChar(m1.id); // Re-using selectChar to trigger build guides
+        if(m1) selectChar(m1.id);
         if(m2) { activeSlot = 2; selectChar(m2.id); }
         if(m3) { activeSlot = 3; selectChar(m3.id); }
-        
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 50);
 }
@@ -307,11 +287,10 @@ function resetBuilder() {
     [1,2,3].forEach(id => clearSlot(id));
 }
 
-// --- NEW FEATURE: Rotation Modal ---
+// --- Rotation Modal ---
 function openRotationModal(teamId) {
     const team = rankedTeams.find(t => t.id === teamId);
     if(!team || !team.rotation) return;
-
     rotationSteps.innerHTML = '';
     team.rotation.forEach((step, index) => {
         const li = document.createElement('li');
@@ -322,7 +301,6 @@ function openRotationModal(teamId) {
         `;
         rotationSteps.appendChild(li);
     });
-
     rotationModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
@@ -332,28 +310,60 @@ function closeRotationModal() {
     document.body.style.overflow = '';
 }
 
-// --- Tier List Logic ---
-function filterTierList(type) {
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        if(btn.dataset.filter === type) {
-            btn.classList.remove('text-slate-500', 'hover:bg-slate-100');
-            btn.classList.add('bg-slate-800', 'text-white');
-        } else {
-            btn.classList.add('text-slate-500', 'hover:bg-slate-100');
-            btn.classList.remove('bg-slate-800', 'text-white');
-        }
-    });
-    renderTierList(type);
+// --- NEW TIER LIST LOGIC (Filter & Sort) ---
+function updateTierFilters(key, value) {
+    currentTierState[key] = value;
+    
+    // Update Button Styles for Type
+    if(key === 'type') {
+        document.querySelectorAll('.type-btn').forEach(btn => {
+            if(btn.dataset.type === value) {
+                btn.classList.add('active', 'bg-white', 'shadow', 'text-slate-900');
+                btn.classList.remove('text-slate-500', 'hover:bg-white');
+            } else {
+                btn.classList.remove('active', 'bg-white', 'shadow', 'text-slate-900');
+                btn.classList.add('text-slate-500', 'hover:bg-white');
+            }
+        });
+    }
+
+    refreshTierList();
 }
 
-function renderTierList(type) {
+function refreshTierList() {
     tierListContainer.innerHTML = '';
-    const list = rankedTeams.filter(t => {
-        if(type === 'all') return true;
-        if(type === 'p2w') return t.type === 'P2W';
-        if(type === 'f2p') return t.type !== 'P2W'; 
+    
+    // 1. Filter
+    let list = rankedTeams.filter(t => {
+        // Type Filter
+        if(currentTierState.type !== 'all') {
+            const isF2P = t.type.includes('F2P');
+            if(currentTierState.type === 'F2P' && !isF2P) return false;
+            if(currentTierState.type === 'P2W' && isF2P) return false;
+        }
+        // Element Filter
+        if(currentTierState.element !== 'all') {
+            if(t.element !== currentTierState.element) return false;
+        }
         return true;
     });
+
+    // 2. Sort
+    list.sort((a, b) => {
+        switch(currentTierState.sort) {
+            case 'dps': return b.stats.dps - a.stats.dps;
+            case 'total': return b.stats.total_dmg - a.stats.total_dmg;
+            case 'time': return a.stats.rot_time - b.stats.rot_time; // Ascending (faster is better)
+            case 'ease': return b.ease_score - a.ease_score; // Higher score = easier
+            default: return 0; // Default tier order from array
+        }
+    });
+
+    // 3. Render
+    if(list.length === 0) {
+        tierListContainer.innerHTML = `<div class="text-center py-10 text-slate-500">No teams found matching these filters.</div>`;
+        return;
+    }
 
     list.forEach(team => {
         const memberObjs = team.members.map(id => resonators.find(r => r.id === id));
@@ -375,7 +385,7 @@ function renderTierList(type) {
                 </div>
                 <p class="text-sm text-slate-500 leading-snug mt-1">${team.desc}</p>
             </div>
-             <div class="grid grid-cols-3 gap-4 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 min-w-[200px]">
+             <div class="grid grid-cols-4 gap-4 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 min-w-[280px]">
                 <div>
                     <div class="text-[10px] text-slate-400 uppercase font-bold">DPS</div>
                     <div class="font-mono font-bold text-slate-800">${formatNumber(team.stats.dps)}</div>
@@ -388,10 +398,15 @@ function renderTierList(type) {
                     <div class="text-[10px] text-slate-400 uppercase font-bold">Time</div>
                     <div class="font-mono font-bold text-slate-800">${team.stats.rot_time}s</div>
                 </div>
+                <div>
+                    <div class="text-[10px] text-slate-400 uppercase font-bold">Ease</div>
+                    <div class="font-mono font-bold text-slate-800">${team.ease_score}/100</div>
+                </div>
             </div>
         `;
         tierListContainer.appendChild(div);
     });
+    lucide.createIcons();
 }
 
 function switchTab(tab) {

@@ -1,6 +1,6 @@
 /**
- * Wuthering Waves Team Builder Data - Patch 3.0 Complete Edition
- * Features: Builds, Weapons, Echoes, Rotations, Stats
+ * Wuthering Waves Team Builder Data - Patch 3.0 Ultimate Edition
+ * Source Reference: ArabWuWa / Prydwen / CN Theorycrafting
  */
 
 export const roles = {
@@ -18,9 +18,9 @@ export const elements = {
     ELECTRO: "Electro"
 };
 
-// --- COMPLETE CHARACTER ROSTER WITH BUILD DATA ---
+// --- COMPLETE CHARACTER ROSTER ---
 export const resonators = [
-    // --- 3.0 NEW UNITS ---
+    // --- 3.0 NEW UNITS (Hypothetical/Leaks) ---
     { 
         id: "camellya", name: "Camellya", element: elements.HAVOC, role: roles.MAIN_DPS, rarity: 5, 
         img: "https://placehold.co/128/3b0764/ffffff?text=Camellya",
@@ -56,7 +56,7 @@ export const resonators = [
     { 
         id: "jinhsi", name: "Jinhsi", element: elements.SPECTRO, role: roles.MAIN_DPS, rarity: 5, 
         img: "https://placehold.co/128/fff7ed/000000?text=Jinhsi",
-        build: { set: "Celestial Light", echo: "Jue", weapon_5: "Ages of Harvest", weapon_4: "Verdant Summit (Alt) / Helios" }
+        build: { set: "Celestial Light", echo: "Jue", weapon_5: "Ages of Harvest", weapon_4: "Helios Cleaver" }
     },
     { 
         id: "changli", name: "Changli", element: elements.FUSION, role: roles.SUB_DPS, rarity: 5, 
@@ -172,56 +172,69 @@ export const resonators = [
     }
 ];
 
-// --- TEAMS WITH STATS & ROTATIONS ---
+// --- EXTENSIVE RANKED TEAMS LIST ---
 export const rankedTeams = [
+    // --- T0 ---
     {
         id: "t_camellya_hyper",
         name: "Camellya Hypercarry",
         tier: "T0",
         type: "P2W",
+        element: elements.HAVOC,
         members: ["camellya", "sanhua", "shorekeeper"],
         desc: "Sanhua buffs Basic Atk (Camellya's main source). Shorekeeper ensures 100% Crit.",
         stats: { dps: 52400, total_dmg: 1257600, rot_time: 24 },
-        rotation: ["Shorekeeper Intro", "Shorekeeper E + Q", "Sanhua Intro", "Sanhua E + R + Heavy", "Sanhua Outro", "Camellya Intro", "Camellya Liberation Mode (Spam Basic)", "Camellya R", "Repeat"]
+        ease_score: 90,
+        rotation: ["Shorekeeper Intro", "Shorekeeper E + Q", "Sanhua Intro", "Sanhua E + R + Heavy", "Sanhua Outro", "Camellya Intro", "Camellya Liberation Mode (Spam Basic)", "Camellya R"]
     },
     {
         id: "t_jinhsi_zhezhi",
         name: "Jinhsi Premium",
         tier: "T0",
         type: "P2W",
+        element: elements.SPECTRO,
         members: ["jinhsi", "zhezhi", "verina"],
         desc: "Zhezhi builds Jinhsi's stacks faster than anyone else. Highest burst.",
         stats: { dps: 49800, total_dmg: 1145400, rot_time: 23 },
-        rotation: ["Verina R -> E -> Jump+Atk -> Outro", "Zhezhi Intro -> E (3x) -> R -> Outro", "Jinhsi Intro -> E -> Auto -> E (Dragon) -> R", "Swap Cancel"]
-    },
-    {
-        id: "t_jinhsi_yuanwu",
-        name: "Jinhsi Coordinator",
-        tier: "T0.5",
-        type: "F2P Friendly",
-        members: ["jinhsi", "yuanwu", "verina"],
-        desc: "Yuanwu provides easy stack generation with minimal field time.",
-        stats: { dps: 41200, total_dmg: 906400, rot_time: 22 },
-        rotation: ["Verina R -> E -> Outro", "Yuanwu Intro -> E -> Outro (Fast)", "Jinhsi Intro -> Full Combo -> R"]
+        ease_score: 85,
+        rotation: ["Verina R -> E -> Jump+Atk -> Outro", "Zhezhi Intro -> E (3x) -> R -> Outro", "Jinhsi Intro -> E -> Auto -> E (Dragon) -> R"]
     },
     {
         id: "t_augusta_mono",
         name: "Augusta Thunder",
         tier: "T0",
         type: "P2W",
+        element: elements.ELECTRO,
         members: ["augusta", "yinlin", "iuno"],
         desc: "Mono-Electro. Yinlin executes, Augusta sustains.",
         stats: { dps: 51000, total_dmg: 1275000, rot_time: 25 },
-        rotation: ["Iuno Shield -> R", "Yinlin E -> Auto -> E -> R -> Heavy -> Outro", "Augusta Intro -> R -> Unga Bunga", "Repeat"]
+        ease_score: 95,
+        rotation: ["Iuno Shield -> R", "Yinlin E -> Auto -> E -> R -> Heavy -> Outro", "Augusta Intro -> R -> Unga Bunga"]
+    },
+
+    // --- T0.5 ---
+    {
+        id: "t_jinhsi_yuanwu",
+        name: "Jinhsi Coordinator",
+        tier: "T0.5",
+        type: "F2P Friendly",
+        element: elements.SPECTRO,
+        members: ["jinhsi", "yuanwu", "verina"],
+        desc: "Yuanwu provides easy stack generation with minimal field time.",
+        stats: { dps: 41200, total_dmg: 906400, rot_time: 22 },
+        ease_score: 95,
+        rotation: ["Verina R -> E -> Outro", "Yuanwu Intro -> E -> Outro (Fast)", "Jinhsi Intro -> Full Combo -> R"]
     },
     {
         id: "t_changli_encore",
         name: "Changli Dual Fire",
         tier: "T0.5",
         type: "P2W",
+        element: elements.FUSION,
         members: ["encore", "changli", "verina"],
         desc: "Quickswap Heavy. Changli buffs Fusion for Encore.",
         stats: { dps: 44500, total_dmg: 1068000, rot_time: 24 },
+        ease_score: 60,
         rotation: ["Verina Buffs", "Changli E -> True Sight -> E", "Swap Encore -> E -> Heavy", "Swap Changli -> R -> Heavy -> Outro", "Encore R -> Burst Window"]
     },
     {
@@ -229,19 +242,37 @@ export const rankedTeams = [
         name: "Xiangli Yao Logic",
         tier: "T0.5",
         type: "P2W",
+        element: elements.ELECTRO,
         members: ["xiangli_yao", "yinlin", "verina"],
         desc: "Perfect sync between Xiangli's Ult and Yinlin's punishment.",
         stats: { dps: 46200, total_dmg: 1016400, rot_time: 22 },
+        ease_score: 75,
         rotation: ["Verina Combo", "Yinlin Full Rotation -> Outro", "Xiangli Intro -> R -> E (Enhanced) -> Cube Spam"]
     },
+    {
+        id: "t_changli_taoqi",
+        name: "Changli Nuke",
+        tier: "T0.5",
+        type: "F2P Friendly",
+        element: elements.FUSION,
+        members: ["changli", "taoqi", "verina"],
+        desc: "Taoqi buffs Changli's Resonance Skill DMG massively.",
+        stats: { dps: 42000, total_dmg: 1008000, rot_time: 24 },
+        ease_score: 70,
+        rotation: ["Verina Buffs", "Taoqi E -> Defensive Stance (3x) -> Outro", "Changli Intro -> E -> True Sight -> R -> E -> Heavy"]
+    },
+    
+    // --- T1 ---
     {
         id: "t_jiyan_mortefi",
         name: "Jiyan Aero God",
         tier: "T1",
         type: "P2W",
+        element: elements.AERO,
         members: ["jiyan", "mortefi", "verina"],
         desc: "Classic AoE King. Mortefi S6 is a monster here.",
         stats: { dps: 39500, total_dmg: 829500, rot_time: 21 },
+        ease_score: 90,
         rotation: ["Verina R+E", "Mortefi R -> E -> E -> Outro", "Jiyan Intro -> R -> Hold Attack (Lance Mode)"]
     },
     {
@@ -249,29 +280,99 @@ export const rankedTeams = [
         name: "Dark Rover Nuke",
         tier: "T1",
         type: "F2P God",
+        element: elements.HAVOC,
         members: ["rover_havoc", "danjin", "verina"],
         desc: "Danjin buffs Havoc DMG by 23%. High risk, high reward.",
         stats: { dps: 38800, total_dmg: 814800, rot_time: 21 },
+        ease_score: 50,
         rotation: ["Verina Buffs", "Danjin E (Spam until red bar full) -> Heavy -> Outro", "Rover Intro -> R -> E -> Dark Surge Mode"]
     },
-    {
-        id: "t_carlotta_skill",
-        name: "Carlotta Skill Spam",
-        tier: "T0.5",
-        type: "P2W",
-        members: ["carlotta", "zhezhi", "shorekeeper"],
-        desc: "Glacio dominance. Carlotta resets CDs, Zhezhi fills gaps.",
-        stats: { dps: 43100, total_dmg: 948200, rot_time: 22 },
-        rotation: ["Shorekeeper Buffs", "Zhezhi Sub-DPS Rotation -> Outro", "Carlotta Intro -> Skill Reset Loops -> R"]
+     {
+        id: "t_encore_sanhua",
+        name: "Encore Basic",
+        tier: "T1",
+        type: "F2P Friendly",
+        element: elements.FUSION,
+        members: ["encore", "sanhua", "verina"],
+        desc: "Standard Encore team. Sanhua buffs Normal Atk for Encore's Ult.",
+        stats: { dps: 35000, total_dmg: 770000, rot_time: 22 },
+        ease_score: 75,
+        rotation: ["Verina R", "Sanhua E -> R -> Heavy -> Outro", "Encore R -> Auto Spam -> E -> Heavy"]
     },
+
+    // --- T1.5 ---
+    {
+        id: "t_calcharo_yinlin",
+        name: "Calcharo Execute",
+        tier: "T1.5",
+        type: "P2W",
+        element: elements.ELECTRO,
+        members: ["calcharo", "yinlin", "verina"],
+        desc: "High damage potential but requires perfect dodge counters.",
+        stats: { dps: 37500, total_dmg: 937500, rot_time: 25 },
+        ease_score: 30,
+        rotation: ["Verina Buffs", "Yinlin E -> E -> R -> Heavy -> Outro", "Calcharo R -> Death Messenger Spam (Dodge Cancel)"]
+    },
+    {
+        id: "t_jiyan_aalto",
+        name: "Jiyan Aero (Alt)",
+        tier: "T1.5",
+        type: "F2P Friendly",
+        element: elements.AERO,
+        members: ["jiyan", "aalto", "verina"],
+        desc: "Aalto provides Aero DMG bonus via his gate.",
+        stats: { dps: 34200, total_dmg: 752400, rot_time: 22 },
+        ease_score: 80,
+        rotation: ["Verina Buffs", "Aalto E -> R -> Dash (Mist) -> Outro", "Jiyan Intro -> R -> Lance Mode"]
+    },
+    {
+        id: "t_danjin_main",
+        name: "Danjin Solo Carry",
+        tier: "T1.5",
+        type: "F2P God",
+        element: elements.HAVOC,
+        members: ["danjin", "taoqi", "verina"],
+        desc: "Danjin plays on the edge of death. Taoqi provides shields.",
+        stats: { dps: 32000, total_dmg: 640000, rot_time: 20 },
+        ease_score: 20,
+        rotation: ["Verina Buffs", "Taoqi Shield", "Danjin E Spam -> Heavy -> R -> E Spam"]
+    },
+
+    // --- T2 / Niche ---
     {
         id: "t_chixia_quick",
         name: "Chixia Revolver",
         tier: "T2",
         type: "F2P",
+        element: elements.FUSION,
         members: ["chixia", "yangyang", "baizhi"],
         desc: "Yangyang feeds Energy to Chixia for constant Ults.",
         stats: { dps: 26800, total_dmg: 536000, rot_time: 20 },
+        ease_score: 90,
         rotation: ["Baizhi Buffs", "Yangyang R -> E -> Outro (Energy)", "Chixia Intro -> E (Hold) -> Boom -> R"]
+    },
+    {
+        id: "t_lingyang_sanhua",
+        name: "Lingyang Dance",
+        tier: "T2",
+        type: "P2W",
+        element: elements.GLACIO,
+        members: ["lingyang", "sanhua", "verina"],
+        desc: "Hard to pilot, but rewarding for Lingyang lovers.",
+        stats: { dps: 29500, total_dmg: 649000, rot_time: 22 },
+        ease_score: 40,
+        rotation: ["Verina Buffs", "Sanhua Buffs", "Lingyang R -> Air Combat -> E Spam"]
+    },
+    {
+        id: "t_yuanwu_carry",
+        name: "Yuanwu DEF Carry",
+        tier: "T3",
+        type: "F2P/Meme",
+        element: elements.ELECTRO,
+        members: ["yuanwu", "yinlin", "baizhi"],
+        desc: "Yuanwu as main on-fielder scaling with DEF.",
+        stats: { dps: 22100, total_dmg: 486200, rot_time: 22 },
+        ease_score: 95,
+        rotation: ["Baizhi Buffs", "Yinlin Off-field", "Yuanwu E -> R -> Punch Punch Punch"]
     }
 ];

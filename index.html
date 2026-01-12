@@ -36,7 +36,6 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
-        .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
@@ -82,13 +81,12 @@
 
                 <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-center">
                     <div class="flex justify-between items-end mb-2">
-                        <h3 class="font-bold text-xs uppercase tracking-wider text-slate-500">Team Investment Cost</h3>
+                        <h3 class="font-bold text-xs uppercase tracking-wider text-slate-500">Investment Cost</h3>
                         <span id="cost-badge" class="text-xs font-bold px-2 py-0.5 rounded bg-slate-100">Calculating...</span>
                     </div>
                     <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
                         <div id="cost-bar" class="bg-wuwa-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
                     </div>
-                    <p id="cost-desc" class="text-[10px] text-slate-400 mt-2 text-right">Based on 5★ rarity & availability</p>
                 </div>
             </div>
 
@@ -111,24 +109,12 @@
                         </div>
                     </div>
                     <div id="build-1" class="hidden bg-white border border-slate-200 rounded-xl p-4 shadow-sm animate-slide-up">
-                        <h4 class="text-xs font-bold uppercase text-slate-400 mb-3 border-b border-slate-100 pb-2">Recommended Build</h4>
-                        <div class="space-y-3 text-sm">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-slate-400"><i data-lucide="disc" class="w-4 h-4"></i></div>
-                                <div><div class="text-[10px] text-slate-500">Echo Set</div><div class="font-semibold text-slate-800" id="build-1-set">-</div></div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-slate-400"><i data-lucide="ghost" class="w-4 h-4"></i></div>
-                                <div><div class="text-[10px] text-slate-500">Main Echo</div><div class="font-semibold text-slate-800" id="build-1-echo">-</div></div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded bg-yellow-50 flex items-center justify-center text-yellow-600"><i data-lucide="sword" class="w-4 h-4"></i></div>
-                                <div><div class="text-[10px] text-slate-500">Best Weapon</div><div class="font-semibold text-slate-800" id="build-1-w5">-</div></div>
-                            </div>
-                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded bg-purple-50 flex items-center justify-center text-purple-600"><i data-lucide="sword" class="w-4 h-4"></i></div>
-                                <div><div class="text-[10px] text-slate-500">F2P Weapon</div><div class="font-semibold text-slate-800" id="build-1-w4">-</div></div>
-                            </div>
+                        <h4 class="text-xs font-bold uppercase text-slate-400 mb-3 border-b border-slate-100 pb-2">Build Guide</h4>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between"><span>Echo Set:</span> <span class="font-bold text-slate-800" id="build-1-set">-</span></div>
+                            <div class="flex justify-between"><span>Main Echo:</span> <span class="font-bold text-slate-800" id="build-1-echo">-</span></div>
+                            <div class="flex justify-between"><span>Best Wep:</span> <span class="font-bold text-slate-800" id="build-1-w5">-</span></div>
+                            <div class="flex justify-between"><span>F2P Wep:</span> <span class="font-bold text-slate-800" id="build-1-w4">-</span></div>
                         </div>
                     </div>
                 </div>
@@ -151,24 +137,12 @@
                         </div>
                     </div>
                     <div id="build-2" class="hidden bg-white border border-slate-200 rounded-xl p-4 shadow-sm animate-slide-up">
-                         <h4 class="text-xs font-bold uppercase text-slate-400 mb-3 border-b border-slate-100 pb-2">Recommended Build</h4>
-                        <div class="space-y-3 text-sm">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-slate-400"><i data-lucide="disc" class="w-4 h-4"></i></div>
-                                <div><div class="text-[10px] text-slate-500">Echo Set</div><div class="font-semibold text-slate-800" id="build-2-set">-</div></div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-slate-400"><i data-lucide="ghost" class="w-4 h-4"></i></div>
-                                <div><div class="text-[10px] text-slate-500">Main Echo</div><div class="font-semibold text-slate-800" id="build-2-echo">-</div></div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded bg-yellow-50 flex items-center justify-center text-yellow-600"><i data-lucide="sword" class="w-4 h-4"></i></div>
-                                <div><div class="text-[10px] text-slate-500">Best Weapon</div><div class="font-semibold text-slate-800" id="build-2-w5">-</div></div>
-                            </div>
-                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded bg-purple-50 flex items-center justify-center text-purple-600"><i data-lucide="sword" class="w-4 h-4"></i></div>
-                                <div><div class="text-[10px] text-slate-500">F2P Weapon</div><div class="font-semibold text-slate-800" id="build-2-w4">-</div></div>
-                            </div>
+                         <h4 class="text-xs font-bold uppercase text-slate-400 mb-3 border-b border-slate-100 pb-2">Build Guide</h4>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between"><span>Echo Set:</span> <span class="font-bold text-slate-800" id="build-2-set">-</span></div>
+                            <div class="flex justify-between"><span>Main Echo:</span> <span class="font-bold text-slate-800" id="build-2-echo">-</span></div>
+                            <div class="flex justify-between"><span>Best Wep:</span> <span class="font-bold text-slate-800" id="build-2-w5">-</span></div>
+                            <div class="flex justify-between"><span>F2P Wep:</span> <span class="font-bold text-slate-800" id="build-2-w4">-</span></div>
                         </div>
                     </div>
                 </div>
@@ -191,24 +165,12 @@
                         </div>
                     </div>
                     <div id="build-3" class="hidden bg-white border border-slate-200 rounded-xl p-4 shadow-sm animate-slide-up">
-                        <h4 class="text-xs font-bold uppercase text-slate-400 mb-3 border-b border-slate-100 pb-2">Recommended Build</h4>
-                        <div class="space-y-3 text-sm">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-slate-400"><i data-lucide="disc" class="w-4 h-4"></i></div>
-                                <div><div class="text-[10px] text-slate-500">Echo Set</div><div class="font-semibold text-slate-800" id="build-3-set">-</div></div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-slate-400"><i data-lucide="ghost" class="w-4 h-4"></i></div>
-                                <div><div class="text-[10px] text-slate-500">Main Echo</div><div class="font-semibold text-slate-800" id="build-3-echo">-</div></div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded bg-yellow-50 flex items-center justify-center text-yellow-600"><i data-lucide="sword" class="w-4 h-4"></i></div>
-                                <div><div class="text-[10px] text-slate-500">Best Weapon</div><div class="font-semibold text-slate-800" id="build-3-w5">-</div></div>
-                            </div>
-                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded bg-purple-50 flex items-center justify-center text-purple-600"><i data-lucide="sword" class="w-4 h-4"></i></div>
-                                <div><div class="text-[10px] text-slate-500">F2P Weapon</div><div class="font-semibold text-slate-800" id="build-3-w4">-</div></div>
-                            </div>
+                        <h4 class="text-xs font-bold uppercase text-slate-400 mb-3 border-b border-slate-100 pb-2">Build Guide</h4>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between"><span>Echo Set:</span> <span class="font-bold text-slate-800" id="build-3-set">-</span></div>
+                            <div class="flex justify-between"><span>Main Echo:</span> <span class="font-bold text-slate-800" id="build-3-echo">-</span></div>
+                            <div class="flex justify-between"><span>Best Wep:</span> <span class="font-bold text-slate-800" id="build-3-w5">-</span></div>
+                            <div class="flex justify-between"><span>F2P Wep:</span> <span class="font-bold text-slate-800" id="build-3-w4">-</span></div>
                         </div>
                     </div>
                 </div>
@@ -216,32 +178,59 @@
 
             <div id="suggestions-area" class="hidden mt-12 animate-slide-up border-t border-slate-200 pt-8">
                 <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                    <i data-lucide="layers" class="w-5 h-5 text-wuwa-600"></i> 
-                    Viable Team Compositions
+                    <i data-lucide="layers" class="w-5 h-5 text-wuwa-600"></i> Viable Team Compositions
                 </h2>
-                
-                <div id="suggestions-grid" class="grid grid-cols-1 xl:grid-cols-2 gap-5">
-                    </div>
+                <div id="suggestions-grid" class="grid grid-cols-1 xl:grid-cols-2 gap-5"></div>
             </div>
-
         </div> 
 
         <div id="view-tierlist" class="hidden space-y-6 animate-fade-in">
-            <div class="flex flex-col md:flex-row justify-between items-end md:items-center gap-4 mb-6 border-b border-slate-200 pb-6">
-                <div>
-                    <h1 class="text-3xl font-extrabold text-slate-900">Meta Tier List</h1>
-                    <p class="text-slate-500">Ranked by DPS output & Rotation Ease (Patch 3.0)</p>
-                </div>
+            <div class="border-b border-slate-200 pb-6">
+                <h1 class="text-3xl font-extrabold text-slate-900 mb-4">Meta Rankings <span class="text-wuwa-600">3.0</span></h1>
                 
-                <div class="flex gap-2 bg-white p-1 rounded-lg border border-slate-200 shadow-sm" id="tier-filters">
-                    <button data-filter="all" class="filter-btn active-filter px-4 py-2 text-xs font-bold rounded-md transition-all bg-slate-800 text-white" onclick="filterTierList('all')">All</button>
-                    <button data-filter="p2w" class="filter-btn px-4 py-2 text-xs font-bold rounded-md transition-all text-slate-500 hover:bg-slate-100" onclick="filterTierList('p2w')">Meta / P2W</button>
-                    <button data-filter="f2p" class="filter-btn px-4 py-2 text-xs font-bold rounded-md transition-all text-slate-500 hover:bg-slate-100" onclick="filterTierList('f2p')">F2P Friendly</button>
+                <div class="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    
+                    <div class="flex gap-2 items-center">
+                        <span class="text-xs font-bold text-slate-400 uppercase mr-2">Type</span>
+                        <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                            <button data-type="all" class="type-btn active px-3 py-1.5 text-xs font-bold rounded-md bg-white shadow text-slate-900" onclick="updateTierFilters('type', 'all')">All</button>
+                            <button data-type="P2W" class="type-btn px-3 py-1.5 text-xs font-bold rounded-md text-slate-500 hover:bg-white" onclick="updateTierFilters('type', 'P2W')">P2W</button>
+                            <button data-type="F2P" class="type-btn px-3 py-1.5 text-xs font-bold rounded-md text-slate-500 hover:bg-white" onclick="updateTierFilters('type', 'F2P')">F2P</button>
+                        </div>
+                    </div>
+
+                    <div class="w-px h-8 bg-slate-200 hidden md:block"></div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase">Element</span>
+                        <select id="element-select" onchange="updateTierFilters('element', this.value)" class="text-sm bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-wuwa-500">
+                            <option value="all">All Elements</option>
+                            <option value="Havoc">Havoc</option>
+                            <option value="Spectro">Spectro</option>
+                            <option value="Fusion">Fusion</option>
+                            <option value="Electro">Electro</option>
+                            <option value="Aero">Aero</option>
+                            <option value="Glacio">Glacio</option>
+                        </select>
+                    </div>
+
+                    <div class="w-px h-8 bg-slate-200 hidden md:block"></div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase">Sort By</span>
+                        <select id="sort-select" onchange="updateTierFilters('sort', this.value)" class="text-sm bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-wuwa-500">
+                            <option value="tier">Tier (Default)</option>
+                            <option value="dps">DPS (High to Low)</option>
+                            <option value="total">Total Dmg (High to Low)</option>
+                            <option value="time">Rotation Time (Fastest)</option>
+                            <option value="ease">Ease of Use (Easy to Hard)</option>
+                        </select>
+                    </div>
+
                 </div>
             </div>
 
-            <div id="tier-list-container" class="space-y-4">
-                </div>
+            <div id="tier-list-container" class="space-y-4"></div>
         </div>
 
     </main>
